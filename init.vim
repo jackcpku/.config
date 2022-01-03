@@ -30,6 +30,8 @@ set ttyfast                 " Speed up scrolling in Vim
 " set noswapfile            " disable creating swap file
 " set backupdir=~/.cache/vim " Directory to store backup files.
 
+let mapleader=" "
+
 set termguicolors
 set splitbelow splitright
 
@@ -177,7 +179,7 @@ let g:prettier#exec_cmd_async = 1
 " Format on save
 augroup fmt
   autocmd!
-  autocmd BufWritePre * undojoin | Prettier
+  autocmd FileType solidity autocmd BufWritePre * undojoin | Prettier
 augroup END
 
 " Git Gutter
@@ -275,14 +277,6 @@ end
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local servers = { 'solidity_ls', 'rust_analyzer', 'tsserver' }
-for _, lsp in ipairs(servers) do
-  nvim_lsp[lsp].setup {
-    on_attach = on_attach,
-    flags = {
-      debounce_text_changes = 150,
-    }
-  }
-end
 
 -- nvim-cmp setup
 local use = require('packer').use
@@ -299,15 +293,14 @@ end)
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
-
--- local lspconfig = require('lspconfig')
-
 -- Enable some language servers with the additional completion capabilities offered by nvim-cmp
--- local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' } 'servers' is actually available
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
-    -- on_attach = my_custom_on_attach,
+    on_attach = on_attach,
     capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 150,
+    }
   }
 end
 
