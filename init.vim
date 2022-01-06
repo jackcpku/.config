@@ -58,39 +58,23 @@ tnoremap <Esc> <C-\><C-n>
 " Airline
 let g:airline#extensions#tabline#enabled = 1
 
-  if !exists('g:airline_symbols')
-    let g:airline_symbols = {}
-  endif
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
+endif
 
-  " unicode symbols
-  " let g:airline_left_sep = '»'
-  " let g:airline_left_sep = '▶'
-  " let g:airline_left_sep = '►'
-  let g:airline_left_sep = ''
-  " let g:airline_right_sep = '«'
-  " let g:airline_right_sep = '◀'
-  let g:airline_right_sep = ''
-  " let g:airline_symbols.colnr = ' ㏇:'
-  " let g:airline_symbols.colnr = ' ℅:'
-  let g:airline_symbols.colnr = ' :'
-  " let g:airline_symbols.crypt = '🔒'
-  let g:airline_symbols.readonly = ''
-  " let g:airline_symbols.linenr = '☰'
-  " let g:airline_symbols.linenr = ' ␊:'
-  " let g:airline_symbols.linenr = ' ␤:'
-  " let g:airline_symbols.linenr = '¶'
-  let g:airline_symbols.linenr = ' '
-  let g:airline_symbols.maxlinenr = ''
-  " let g:airline_symbols.maxlinenr = '㏑'
-  " let g:airline_symbols.branch = '⎇'
-  let g:airline_symbols.branch = ''
-  " let g:airline_symbols.paste = 'ρ'
-  let g:airline_symbols.paste = 'Þ'
-  " let g:airline_symbols.paste = '∥'
-  let g:airline_symbols.spell = 'Ꞩ'
-  let g:airline_symbols.notexists = 'Ɇ'
-  let g:airline_symbols.whitespace = ''
-  let g:airline_symbols.dirty='⚡'
+" unicode symbols
+let g:airline_left_sep = ''
+let g:airline_right_sep = ''
+let g:airline_symbols.colnr = ' :'
+let g:airline_symbols.readonly = ''
+let g:airline_symbols.linenr = ' '
+let g:airline_symbols.maxlinenr = ''
+let g:airline_symbols.branch = ''
+let g:airline_symbols.paste = 'Þ'
+let g:airline_symbols.spell = 'Ꞩ'
+let g:airline_symbols.notexists = 'Ɇ'
+let g:airline_symbols.whitespace = ''
+let g:airline_symbols.dirty='⚡'
 
 call plug#begin()
 
@@ -124,10 +108,13 @@ Plug 'airblade/vim-gitgutter'
 " https://github.com/prettier/vim-prettier 
 " post install (yarn install | npm install) then load plugin only for editing supported files
 " Plug 'prettier/vim-prettier', { 'do': 'npm install --frozen-lockfile --production' }
-Plug 'prettier/vim-prettier', { 'do': 'npm install && npm add prettier-plugin-solidity' }
+Plug 'prettier/vim-prettier', { 'do': 'npm install && npm add prettier-plugin-solidity' } " For solidity, javascript and typescript
 " Another formatter
 " https://github.com/sbdchd/neoformat
-" Plug 'sbdchd/neoformat'
+Plug 'sbdchd/neoformat' " For rust
+
+" https://github.com/jiangmiao/auto-pairs
+Plug 'jiangmiao/auto-pairs'
 
 " https://github.com/tpope/vim-commentary
 " For comment & uncomment
@@ -180,7 +167,14 @@ let g:prettier#exec_cmd_async = 1
 augroup fmt
   autocmd!
   autocmd FileType solidity autocmd BufWritePre * undojoin | Prettier
+  " autocmd FileType rust autocmd BufWritePre * undojoin | NeoFormat
 augroup END
+
+" augroup fmt_rust
+"   autocmd!
+"   autocmd FileType rust autocmd BufWritePre * undojoin | NeoFormat
+" augroup END
+
 
 " Git Gutter
 set updatetime=250
@@ -188,8 +182,8 @@ let g:gitgutter_max_signs = 500
 " No mapping
 let g:gitgutter_map_keys = 0
 let g:gitgutter_set_sign_backgrounds = 1
-highlight GitGutterAdd guifg=#009900 ctermfg=2
-highlight GitGutterChange guifg=#bbbb00 ctermfg=3
+highlight GitGutterAdd guifg=#55aa22 ctermfg=2
+highlight GitGutterChange guifg=#2266aa ctermfg=3
 highlight GitGutterDelete guifg=#ff2222 ctermfg=1
 
 let g:gitgutter_sign_added = '██'
@@ -276,7 +270,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'solidity_ls', 'rust_analyzer', 'tsserver' }
+local servers = { 'solidity_ls', 'rust_analyzer', 'tsserver', 'pyright', 'gopls' }
 
 -- nvim-cmp setup
 local use = require('packer').use
@@ -287,6 +281,10 @@ require('packer').startup(function()
   use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
   use 'L3MON4D3/LuaSnip' -- Snippets plugin
   use {'tzachar/cmp-tabnine', run='./install.sh', requires = 'hrsh7th/nvim-cmp'}  -- tabnine
+  use {
+    "ray-x/lsp_signature.nvim",
+  } -- https://github.com/ray-x/lsp_signature.nvim 
+
 end)
 
 -- Add additional capabilities supported by nvim-cmp
@@ -367,6 +365,15 @@ tabnine:setup({
 		-- uncomment to ignore in lua:
 		-- lua = true
 	};
+})
+
+-- lsp_signature settings
+require "lsp_signature".setup({
+  bind = true,
+  handler_opts = {
+    border = "rounded"
+  },
+  hint_prefix = "💡 ",
 })
 
 -- nvim-tree settings, enable network
